@@ -12,12 +12,14 @@ try {
     $pdo = new PDO("sqlite:" . $dbFile);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+    $pdo->exec("PRAGMA foreign_keys = ON");
 
     // Create tables if not existing yet
     $pdo->exec("CREATE TABLE IF NOT EXISTS rooms (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         room_code TEXT UNIQUE,
         name TEXT,
+        creator_session_id TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )");
 
@@ -30,16 +32,23 @@ try {
     $pdo->exec("CREATE TABLE IF NOT EXISTS room_videos (
         room_id INTEGER,
         video_id INTEGER,
-        PRIMARY KEY (room_id, video_id)
+        submitted_by_session_id TEXT,
+        PRIMARY KEY (room_id, video_id),
+        FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE,
+        FOREIGN KEY (video_id) REFERENCES videos(id) ON DELETE CASCADE
     )");
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS votes (
         room_id INTEGER,
         video_id INTEGER,
         user_session_id TEXT,
-        vote_value INTEGER, -- 1 = Like, 0 = Dislike
-        PRIMARY KEY (room_id, video_id, user_session_id)
+        vote_value INTEGER, -- 1 = Like, 0 = Dislike,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (room_id, video_id, user_session_id),
+        FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE,
+        FOREIGN KEY (video_id) REFERENCES videos(id) ON DELETE CASCADE
     )");
+
 } catch (PDOException $e) {
     die("Database error: " . $e->getMessage());
 }
@@ -59,14 +68,15 @@ function get_yt_video_id($youtube_video_url) {
 // Room logic
 $room_code = $_GET["room"] ?? null;
 $room = null;
+$is_room_owner = false;
 
 // Create new room
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["create_room"])) {
     $new_code = bin2hex(random_bytes(3)); // z.B. a1b2c3
     $name = trim($_POST["room_name"]) ?: "unnamed room";
 
-    $stmt = $pdo->prepare("INSERT INTO rooms (room_code, name) VALUES (?, ?)");
-    $stmt->execute([$new_code, $name]);
+    $stmt = $pdo->prepare("INSERT INTO rooms (room_code, name, creator_session_id) VALUES (?, ?,?)");
+    $stmt->execute([$new_code, $name, $user_id]);
 
     header("Location: ?room=" . $new_code);
     exit;
@@ -81,6 +91,17 @@ if ($room_code) {
     $room = $stmt->fetch();
 
     if ($room) {
+        // Check if current user is owner of room
+        $is_room_owner = ($room["creator_session_id"] === $user_id);
+
+        // If form to delete room was submitted
+        if ($is_room_owner && isset($_POST["delete_room"])) {
+            $stmt = $pdo->prepare("DELETE FROM rooms WHERE id = ?");
+            $stmt->execute([$room["id"]]);
+            header("Location: index.php");
+            exit;
+        }
+
         // If form to add new video was submitted
         if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["add_video"])) {
             $yt_video_id = get_yt_video_id($_POST["yt_video_url"]);
@@ -101,6 +122,16 @@ if ($room_code) {
             }
         }
 
+        // If form to delete video was submitted--
+        if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["delete_video"])) {
+            $vid_to_delete = $_POST["video_id"];
+
+            // Allow deleting when current user is room creator or added video
+            $checkSql = "DELETE FROM room_videos WHERE room_id = ? AND video_id = ? AND (submitted_by_session_id = ? OR ?)";
+            $stmt = $pdo->prepare($checkSql);
+            $stmt->execute([$room["id"], $vid_to_delete, $user_id, $is_room_owner ? 1 : 0]);
+        }
+
         // Add dataset for downvote or upvote for current video to database
         if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["vote"])) {
             $video_id = $_POST["video_id"];
@@ -116,7 +147,7 @@ if ($room_code) {
 $videos = [];
 if ($room) {
     // Load videos, video voting stats and votes of current user from database and sort it most popular first
-    $sql = "SELECT v.*,
+    $sql = "SELECT v.*, rv.submitted_by_session_id,
             SUM(CASE WHEN vt.vote_value = 1 THEN 1 ELSE 0 END) as likes,
             SUM(CASE WHEN vt.vote_value = 0 THEN 1 ELSE 0 END) as dislikes,
             (SELECT vote_value FROM votes WHERE room_id = r.id AND video_id = v.id AND user_session_id = ?) as current_user_vote
@@ -142,7 +173,7 @@ if ($room) {
         <title>ThumbRank <?php echo $room ? "- " . htmlspecialchars($room["name"]) : ""; ?></title>
 
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0&icon_names=favorite,thumb_down,thumb_up,thumbs_up_down" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0&icon_names=close,favorite,thumb_down,thumb_up,thumbs_up_down" />
 
         <style>
             .card{
@@ -150,6 +181,12 @@ if ($room) {
             }
             .card:hover{
                 transform: translateY(-2px);
+            }
+
+            .btn-delete-video {
+                position: absolute; top: 8px; right: 8px; z-index: 10;
+                width: 25px; height: 25px; display: flex;
+                align-items: center; justify-content: center; cursor: pointer;
             }
         </style>
 
@@ -169,9 +206,14 @@ if ($room) {
                 <div class="collapse navbar-collapse" id="navbarContent">
 
                 <?php if ($room): ?>
-                    <div class="pt-3 pt-lg-0 ms-auto">
+                    <div class="pt-3 pt-lg-0 ms-auto d-flex align-items-center">
                         <span onclick="copy_room_link()" class="badge bg-secondary">Room: <?php echo htmlspecialchars($room['room_code']); ?></span>
                         <a href="?" class="btn btn-outline-secondary btn-sm ms-2">Leave room</a>
+                        <?php if ($is_room_owner): ?>
+                            <form method="POST" onsubmit="return confirm('Do you want to delete the room completely?');" class=" ms-2">
+                                <button type="submit" name="delete_room" class="btn btn-outline-danger btn-sm">Delete room</button>
+                            </form>
+                        <?php endif; ?>
                     </div>
                 <?php endif; ?>
 
@@ -216,10 +258,20 @@ if ($room) {
                     <?php foreach ($videos as $vid): ?>
                         <?php
                             $thumbUrl = "https://img.youtube.com/vi/" . $vid["youtube_id"] . "/maxresdefault.jpg";
+                            $can_delete = $is_room_owner;   //($vid["creator_session_id"] === $user_id); ||
                         ?>
                         <div class="col">
                             <div class="card h-100 shadow-sm">
                                 <img class="card-img-top w-100" src="<?php echo $thumbUrl; ?>" alt="Thumbnail" loading="lazy">
+
+                                <?php if ($can_delete): ?>
+                                    <form method="POST" onsubmit="return confirm('Remove thumbnail?');">
+                                        <input type="hidden" name="video_id" value="<?php echo $vid["id"]; ?>">
+                                        <button type="submit" name="delete_video" class="btn btn-danger btn-delete-video" title="Remove thumbnail">
+                                            <span class="material-symbols-rounded fs-6">close</span>
+                                        </button>
+                                    </form>
+                                <?php endif; ?>
 
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between mb-2 fw-bold">

@@ -1,0 +1,111 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2026-01-09 13:49+0100\n"
+"PO-Revision-Date: 2026-01-09 13:49+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: en_US\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.8\n"
+"X-Poedit-Basepath: ../../..\n"
+"X-Poedit-SearchPath-0: index.php\n"
+
+#: index.php:242
+msgid "Toggle navigation"
+msgstr "Toggle navigation"
+
+#: index.php:255
+msgid "German"
+msgstr "German"
+
+#: index.php:256
+msgid "English"
+msgstr "English"
+
+#: index.php:262
+msgid "Room"
+msgstr "Room"
+
+#: index.php:263
+msgid "Leave room"
+msgstr "Leave room"
+
+#: index.php:265
+msgid "Do you want to delete the room completely?"
+msgstr "Do you want to delete the room completely?"
+
+#: index.php:266
+msgid "Delete room"
+msgstr "Delete room"
+
+#: index.php:281
+msgid "Create new room"
+msgstr "Create new room"
+
+#: index.php:282
+msgid "Start new session for your team."
+msgstr "Start new session for your team."
+
+#: index.php:286
+msgid "Room name (eg. vlog january)"
+msgstr "Room name (eg. vlog january)"
+
+#: index.php:289
+msgid "Open room"
+msgstr "Open room"
+
+#: index.php:297
+msgid "Add YouTube video"
+msgstr "Add YouTube video"
+
+#: index.php:303
+msgid "Add"
+msgstr "Add"
+
+#: index.php:308
+msgid "Rate thumbnails"
+msgstr "Rate thumbnails"
+
+#: index.php:313
+msgid "No videos in this room yet. Add the first link above!"
+msgstr "No videos in this room yet. Add the first link above!"
+
+#: index.php:329
+#| msgid "Rate thumbnails"
+msgid "Delete thumbnail?"
+msgstr "Delete thumbnail?"
+
+#: index.php:331
+msgid "Remove thumbnail"
+msgstr "Remove thumbnail"
+
+#: index.php:341 index.php:363
+msgid "Would click"
+msgid_plural "Would click"
+msgstr[0] "Would click"
+msgstr[1] "Would click"
+
+#: index.php:345
+msgid "Would skip"
+msgid_plural "Would skip"
+msgstr[0] "Would skip"
+msgstr[1] "Would skip"
+
+#: index.php:368
+msgid "Rather not"
+msgstr "Rather not"
+
+#: index.php:382
+msgid "Made with"
+msgstr "Made with"
+
+#: index.php:384
+msgid "by"
+msgstr "by"
+
+#~ msgid "Skip"
+#~ msgstr "Skip"

@@ -155,8 +155,8 @@ if ($room_code) {
                 $vid_row = $stmt->fetch();
 
                 // Connect video dataset to current room
-                $stmt = $pdo->prepare("INSERT OR IGNORE INTO room_videos (room_id, video_id) VALUES (?, ?)");
-                $stmt->execute([$room["id"], $vid_row["id"]]);
+                $stmt = $pdo->prepare("INSERT OR IGNORE INTO room_videos (room_id, video_id, submitted_by_session_id) VALUES (?, ?, ?)");
+                $stmt->execute([$room["id"], $vid_row["id"], $user_id]);
             }
         }
 
@@ -319,7 +319,7 @@ if ($room) {
                     <?php foreach ($videos as $vid): ?>
                         <?php
                             $thumbUrl = "https://img.youtube.com/vi/" . $vid["youtube_id"] . "/maxresdefault.jpg";
-                            $can_delete = $is_room_owner;   //($vid["creator_session_id"] === $user_id); ||
+                            $can_delete = ($is_room_owner || $vid["submitted_by_session_id"] === $user_id);
                         ?>
                         <div class="col">
                             <div class="card h-100 shadow-sm">

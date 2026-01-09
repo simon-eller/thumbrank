@@ -4,8 +4,10 @@
 session_start();
 $user_id = session_id();
 
-// Gettext stuff
+// Enviromental variables
 $default_lang = "de";
+
+// Gettext stuff
 $current_user_lang = $_GET["lang"] ?? $_SESSION["lang"] ?? $default_lang;
 
 $locales = [

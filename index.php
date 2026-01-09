@@ -340,7 +340,7 @@ if ($room) {
                                     <div class="d-flex justify-content-between mb-2 fw-bold">
                                         <span class="text-success">
                                             <?php echo $vid["likes"]; ?>
-                                            <?php echo ngettext("Would click", "Would click", $vid["dislikes"]); ?>
+                                            <?php echo ngettext("Would click", "Would click", $vid["likes"]); ?>
                                         </span>
                                         <span class="text-danger">
                                             <?php echo $vid["dislikes"]; ?>

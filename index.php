@@ -4,6 +4,44 @@
 session_start();
 $user_id = session_id();
 
+// Gettext stuff
+$default_lang = "de";
+$current_user_lang = $_GET["lang"] ?? $_SESSION["lang"] ?? $default_lang;
+
+$locales = [
+    "de" => "de_DE.UTF-8",
+    "en" => "en_US.UTF-8"
+];
+
+if (array_key_exists($current_user_lang, $locales)) {
+    // Store lang in current users session
+    $_SESSION["lang"] = $current_user_lang;
+} else {
+    // Fallback to default lang
+    $current_user_lang = $default_lang;
+}
+
+$system_locale = $locales[$current_user_lang];
+
+// Set environment variables for gettext
+putenv("LC_ALL=$system_locale");
+setlocale(LC_ALL, $system_locale);
+
+// Specify location of translation tables
+bindtextdomain("messages", __DIR__ . "/locale");
+bind_textdomain_codeset("messages", "UTF-8");
+
+// Set domain
+textdomain("messages");
+
+// Remove lang parameter from url after lang is stored in session
+if (isset($_GET["lang"])) {
+    $params = $_GET; unset($params["lang"]);
+    $q = http_build_query($params);
+    header("Location: " . $_SERVER["PHP_SELF"] . ($q ? "?".$q : ""));
+    exit;
+}
+
 // Set path to sqlite database
 $dbFile = __DIR__ . "/thumbrank.db";
 
@@ -98,7 +136,7 @@ if ($room_code) {
         if ($is_room_owner && isset($_POST["delete_room"])) {
             $stmt = $pdo->prepare("DELETE FROM rooms WHERE id = ?");
             $stmt->execute([$room["id"]]);
-            header("Location: index.php");
+            header("Location: ./");
             exit;
         }
 
@@ -166,14 +204,16 @@ if ($room) {
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo $current_user_lang; ?>">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>ThumbRank <?php echo $room ? "- " . htmlspecialchars($room["name"]) : ""; ?></title>
 
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0&icon_names=close,favorite,thumb_down,thumb_up,thumbs_up_down" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0&icon_names=close,favorite,globe,thumb_down,thumb_up,thumbs_up_down" />
+
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 -960 960 960%22 fill=%22%231f1f1f%22><path d=%22M80-400q-33 0-56.5-23.5T0-480v-240q0-12 5-23t13-19l126-126q9-9 20-13.5t22-4.5q26 0 45 20t14 51l-13 75h208q17 0 28.5 11.5T480-720v50q0 6-1 11.5t-3 10.5l-90 212q-7 17-22.5 26.5T330-400H80Zm440 200q-17 0-28.5-11.5T480-240v-50q0-6 1-11.5t3-10.5l90-212q8-17 23-26.5t33-9.5h250q33 0 56.5 23.5T960-480v240q0 12-4.5 22.5T942-198L816-72q-9 9-20 13.5T774-54q-26 0-45-20t-14-51l13-75H520Z%22/></svg>">
 
         <style>
             .card{
@@ -196,26 +236,39 @@ if ($room) {
             <div class="container">
                 <a class="navbar-brand icon-link" href="#">
                     <span class="material-symbols-rounded fs-2 pe-2 text-primary">thumbs_up_down</span>
-                    <span class=" fs-1 fw-bold text-dark">Thumbrank</span>
+                    <span class=" fs-1 fw-bold text-dark">ThumbRank</span>
                 </a>
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="<?php echo gettext("Toggle navigation"); ?>">
                       <span class="navbar-toggler-icon"></span>
                 </button>
 
                 <div class="collapse navbar-collapse" id="navbarContent">
-
-                <?php if ($room): ?>
                     <div class="pt-3 pt-lg-0 ms-auto d-flex align-items-center">
-                        <span onclick="copy_room_link()" class="badge bg-secondary">Room: <?php echo htmlspecialchars($room['room_code']); ?></span>
-                        <a href="?" class="btn btn-outline-secondary btn-sm ms-2">Leave room</a>
-                        <?php if ($is_room_owner): ?>
-                            <form method="POST" onsubmit="return confirm('Do you want to delete the room completely?');" class=" ms-2">
-                                <button type="submit" name="delete_room" class="btn btn-outline-danger btn-sm">Delete room</button>
-                            </form>
+                        <ul class="navbar-nav">
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle icon-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span class="material-symbols-rounded align-middle fs-5">globe</span>
+                                    <?php echo strtoupper($current_user_lang); ?>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="?<?php echo http_build_query(array_merge($_GET, ["lang" => "de"])); ?>"><?php echo gettext("German"); ?></a></li>
+                                    <li><a class="dropdown-item" href="?<?php echo http_build_query(array_merge($_GET, ["lang" => "en"])); ?>"><?php echo gettext("English"); ?></a></li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                        <?php if ($room): ?>
+                            <span onclick="copy_room_link()" class="badge bg-secondary ms-2"><?php echo gettext("Room"); ?>: <?php echo htmlspecialchars($room["room_code"]); ?></span>
+                            <a href="?" class="btn btn-outline-secondary btn-sm ms-2"><?php echo gettext("Leave room"); ?></a>
+                            <?php if ($is_room_owner): ?>
+                                <form method="POST" onsubmit="return confirm('<?php echo gettext("Do you want to delete the room completely?"); ?>');" class=" ms-2">
+                                    <button type="submit" name="delete_room" class="btn btn-outline-danger btn-sm"><?php echo gettext("Delete room"); ?></button>
+                                </form>
+                            <?php endif; ?>
                         <?php endif; ?>
+
                     </div>
-                <?php endif; ?>
 
                 </div>
             </div>
@@ -225,15 +278,15 @@ if ($room) {
 
             <?php if (!$room): ?>
                 <div class="card p-5 text-center shadow mx-auto" style="max-width: 500px;">
-                    <h3>Create new room</h3>
-                    <p class="text-muted">Start new session for you team.</p>
+                    <h3><?php echo gettext("Create new room"); ?></h3>
+                    <p class="text-muted"><?php echo gettext("Start new session for your team."); ?></p>
 
                     <form method="POST">
                         <div class="mb-4">
-                            <input type="text" name="room_name" class="form-control" placeholder="Room name (e.g vlog january)" required>
+                            <input type="text" name="room_name" class="form-control" placeholder="<?php echo gettext("Room name (eg. vlog january)"); ?>" required>
                         </div>
 
-                        <button type="submit" name="create_room" class="btn btn-primary w-100 btn-lg">Open room</button>
+                        <button type="submit" name="create_room" class="btn btn-primary w-100 btn-lg"><?php echo gettext("Open room"); ?></button>
                     </form>
                 </div>
             <?php endif; ?>
@@ -241,18 +294,26 @@ if ($room) {
             <?php if ($room): ?>
 
                 <div class="card p-4 mb-5 shadow-sm">
-                    <h5 class="card-title pb-2">Add YouTube video</h5>
+                    <h5 class="card-title pb-2"><?php echo gettext("Add YouTube video"); ?></h5>
                     <form method="POST" class="row g-2">
                         <div class="col-md-10">
                             <input type="text" name="yt_video_url" class="form-control" placeholder="https://www.youtube.com/watch?v=..." required>
                         </div>
                         <div class="col-md-2">
-                            <button type="submit" name="add_video" class="btn btn-primary w-100">Add</button>
+                            <button type="submit" name="add_video" class="btn btn-primary w-100"><?php echo gettext("Add"); ?></button>
                         </div>
                     </form>
                 </div>
 
-                <h4 class="mb-3">Rate thumbnails (<?php echo count($videos); ?>)</h4>
+                <h4 class="mb-3"><?php echo gettext("Rate thumbnails"); ?> (<?php echo count($videos); ?>)</h4>
+
+                <?php if (empty($videos)): ?>
+                    <div class="col-12 py-3">
+                        <p class="text-muted">
+                            <?php echo gettext("No videos in this room yet. Add the first link above!"); ?>
+                        </p>
+                    </div>
+                <?php endif; ?>
 
                 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                     <?php foreach ($videos as $vid): ?>
@@ -265,9 +326,9 @@ if ($room) {
                                 <img class="card-img-top w-100" src="<?php echo $thumbUrl; ?>" alt="Thumbnail" loading="lazy">
 
                                 <?php if ($can_delete): ?>
-                                    <form method="POST" onsubmit="return confirm('Remove thumbnail?');">
+                                    <form method="POST" onsubmit="return confirm('<?php echo gettext("Delete thumbnail?"); ?>');">
                                         <input type="hidden" name="video_id" value="<?php echo $vid["id"]; ?>">
-                                        <button type="submit" name="delete_video" class="btn btn-danger btn-delete-video" title="Remove thumbnail">
+                                        <button type="submit" name="delete_video" class="btn btn-danger btn-delete-video" title="<?php echo gettext("Remove thumbnail"); ?>">
                                             <span class="material-symbols-rounded fs-6">close</span>
                                         </button>
                                     </form>
@@ -275,8 +336,14 @@ if ($room) {
 
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between mb-2 fw-bold">
-                                        <span class="text-success"><?php echo $vid["likes"]; ?> Would watch</span>
-                                        <span class="text-danger"><?php echo $vid["dislikes"]; ?> Skip</span>
+                                        <span class="text-success">
+                                            <?php echo $vid["likes"]; ?>
+                                            <?php echo ngettext("Would click", "Would click", $vid["dislikes"]); ?>
+                                        </span>
+                                        <span class="text-danger">
+                                            <?php echo $vid["dislikes"]; ?>
+                                            <?php echo ngettext("Would skip", "Would skip", $vid["dislikes"]); ?>
+                                        </span>
                                     </div>
                                     <div class="progress mb-3" style="height: 6px;">
                                         <?php
@@ -293,12 +360,12 @@ if ($room) {
 
                                         <button type="submit" name="vote_value" value="1" style="width:48%;" class="btn icon-link <?php echo ($vid["current_user_vote"] === 1) ? "btn-success text-white" : "btn-outline-success"; ?>">
                                             <span class="material-symbols-rounded">thumb_up</span>
-                                            Would click
+                                            <?php echo gettext("Would click"); ?>
                                         </button>
 
                                         <button type="submit" name="vote_value" value="0" style="width:48%;" class="btn icon-link <?php echo ($vid["current_user_vote"] === 0) ? "btn-danger text-white" : "btn-outline-danger"; ?>">
                                             <span class="material-symbols-rounded">thumb_down</span>
-                                            Rather not
+                                            <?php echo gettext("Rather not"); ?>
                                         </button>
                                     </form>
                                 </div>
@@ -306,24 +373,16 @@ if ($room) {
                         </div>
                     <?php endforeach; ?>
 
-                    <?php if (empty($videos)): ?>
-                        <div class="col-12 py-3">
-                            <p class="text-muted">
-                                No videos in this room yet. Add the first link above!
-                            </p>
-                        </div>
-                    <?php endif; ?>
                 </div>
             <?php endif; ?>
 
         </div>
 
         <div class="pt-2 pt-md-0 text-center pb-5">
-            Made with
-            <span class="material-symbols-rounded fs-6">
-            favorite
-            </span>
-            by <a class="text-dark" href="https://simon-eller.at">Simon Eller</a>
+            <?php echo gettext("Made with"); ?>
+            <span class="material-symbols-rounded fs-6">favorite</span>
+            <?php echo gettext("by"); ?>
+           <a class="text-dark" href="https://simon-eller.at">Simon Eller</a>
         </div>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>

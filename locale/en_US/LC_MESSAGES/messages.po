@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2026-01-09 13:49+0100\n"
-"PO-Revision-Date: 2026-01-09 13:49+0100\n"
+"POT-Creation-Date: 2026-01-09 14:39+0100\n"
+"PO-Revision-Date: 2026-01-09 14:39+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: en_US\n"
@@ -14,96 +14,111 @@ msgstr ""
 "X-Poedit-Basepath: ../../..\n"
 "X-Poedit-SearchPath-0: index.php\n"
 
-#: index.php:242
+#: index.php:259
 msgid "Toggle navigation"
 msgstr "Toggle navigation"
 
-#: index.php:255
+#: index.php:272
 msgid "German"
 msgstr "German"
 
-#: index.php:256
+#: index.php:273
 msgid "English"
 msgstr "English"
 
-#: index.php:262
+#: index.php:279
 msgid "Room"
 msgstr "Room"
 
-#: index.php:263
+#: index.php:280
 msgid "Leave room"
 msgstr "Leave room"
 
-#: index.php:265
+#: index.php:286
+msgid "Hide results"
+msgstr "Hide results"
+
+#: index.php:286
+msgid "Show results"
+msgstr "Show results"
+
+#: index.php:290
 msgid "Do you want to delete the room completely?"
 msgstr "Do you want to delete the room completely?"
 
-#: index.php:266
+#: index.php:291
 msgid "Delete room"
 msgstr "Delete room"
 
-#: index.php:281
+#: index.php:306
 msgid "Create new room"
 msgstr "Create new room"
 
-#: index.php:282
+#: index.php:307
 msgid "Start new session for your team."
 msgstr "Start new session for your team."
 
-#: index.php:286
+#: index.php:311
 msgid "Room name (eg. vlog january)"
 msgstr "Room name (eg. vlog january)"
 
-#: index.php:289
+#: index.php:314
 msgid "Open room"
 msgstr "Open room"
 
-#: index.php:297
+#: index.php:322
 msgid "Add YouTube video"
 msgstr "Add YouTube video"
 
-#: index.php:303
+#: index.php:328
 msgid "Add"
 msgstr "Add"
 
-#: index.php:308
+#: index.php:333
 msgid "Rate thumbnails"
 msgstr "Rate thumbnails"
 
-#: index.php:313
+#: index.php:338
 msgid "No videos in this room yet. Add the first link above!"
 msgstr "No videos in this room yet. Add the first link above!"
 
-#: index.php:329
-#| msgid "Rate thumbnails"
+#: index.php:359
 msgid "Delete thumbnail?"
 msgstr "Delete thumbnail?"
 
-#: index.php:331
+#: index.php:361
 msgid "Remove thumbnail"
 msgstr "Remove thumbnail"
 
-#: index.php:341 index.php:363
+#: index.php:373 index.php:406
 msgid "Would click"
 msgid_plural "Would click"
 msgstr[0] "Would click"
 msgstr[1] "Would click"
 
-#: index.php:345
+#: index.php:377
 msgid "Would skip"
 msgid_plural "Would skip"
 msgstr[0] "Would skip"
 msgstr[1] "Would skip"
 
-#: index.php:368
+#: index.php:388
+msgid "Visible only to you"
+msgstr "Visible only to you"
+
+#: index.php:396
+msgid "Votes hidden"
+msgstr "Votes hidden"
+
+#: index.php:411
 msgid "Rather not"
 msgstr "Rather not"
 
-#: index.php:382
+#: index.php:425
 msgid "Made with"
 msgstr "Made with"
 
-#: index.php:384
+#: index.php:427
 msgid "by"
 msgstr "by"
 

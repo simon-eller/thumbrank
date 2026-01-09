@@ -60,6 +60,7 @@ try {
         room_code TEXT UNIQUE,
         name TEXT,
         creator_session_id TEXT,
+        votes_visible INTEGER DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )");
 
@@ -115,7 +116,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["create_room"])) {
     $new_code = bin2hex(random_bytes(3)); // z.B. a1b2c3
     $name = trim($_POST["room_name"]) ?: "unnamed room";
 
-    $stmt = $pdo->prepare("INSERT INTO rooms (room_code, name, creator_session_id) VALUES (?, ?,?)");
+    $stmt = $pdo->prepare("INSERT INTO rooms (room_code, name, creator_session_id, votes_visible) VALUES (?, ?, ?, 0)");
     $stmt->execute([$new_code, $name, $user_id]);
 
     header("Location: ?room=" . $new_code);
@@ -139,6 +140,15 @@ if ($room_code) {
             $stmt = $pdo->prepare("DELETE FROM rooms WHERE id = ?");
             $stmt->execute([$room["id"]]);
             header("Location: ./");
+            exit;
+        }
+
+        // If form to toggle voting results visibility was submitted
+        if ($is_room_owner && isset($_POST["toggle_visibility"])) {
+            $new_votes_visibility = $room["votes_visible"] ? 0 : 1;
+            $stmt = $pdo->prepare("UPDATE rooms SET votes_visible = ? WHERE id = ?");
+            $stmt->execute([$new_votes_visibility, $room["id"]]);
+            header("Location: ?room=" . $room_code);
             exit;
         }
 
@@ -213,7 +223,7 @@ if ($room) {
         <title>ThumbRank <?php echo $room ? "- " . htmlspecialchars($room["name"]) : ""; ?></title>
 
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0&icon_names=close,favorite,globe,thumb_down,thumb_up,thumbs_up_down" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0&icon_names=close,favorite,globe,thumb_down,thumb_up,thumbs_up_down,visibility,visibility_off" />
 
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 -960 960 960%22 fill=%22%231f1f1f%22><path d=%22M80-400q-33 0-56.5-23.5T0-480v-240q0-12 5-23t13-19l126-126q9-9 20-13.5t22-4.5q26 0 45 20t14 51l-13 75h208q17 0 28.5 11.5T480-720v50q0 6-1 11.5t-3 10.5l-90 212q-7 17-22.5 26.5T330-400H80Zm440 200q-17 0-28.5-11.5T480-240v-50q0-6 1-11.5t3-10.5l90-212q8-17 23-26.5t33-9.5h250q33 0 56.5 23.5T960-480v240q0 12-4.5 22.5T942-198L816-72q-9 9-20 13.5T774-54q-26 0-45-20t-14-51l13-75H520Z%22/></svg>">
 
@@ -229,6 +239,11 @@ if ($room) {
                 position: absolute; top: 8px; right: 8px; z-index: 10;
                 width: 25px; height: 25px; display: flex;
                 align-items: center; justify-content: center; cursor: pointer;
+            }
+            .blurred-stats {
+                filter: blur(4px);
+                opacity: 0.5;
+                user-select: none;
             }
         </style>
 
@@ -261,9 +276,17 @@ if ($room) {
                         </ul>
 
                         <?php if ($room): ?>
-                            <span onclick="copy_room_link()" class="badge bg-secondary ms-2"><?php echo gettext("Room"); ?>: <?php echo htmlspecialchars($room["room_code"]); ?></span>
+                            <span onclick="copy_room_link()" class="badge bg-secondary ms-2 cursor-pointer" style="cursor:pointer;"><?php echo gettext("Room"); ?>: <?php echo htmlspecialchars($room["room_code"]); ?></span>
                             <a href="?" class="btn btn-outline-secondary btn-sm ms-2"><?php echo gettext("Leave room"); ?></a>
+
                             <?php if ($is_room_owner): ?>
+                                <form method="POST" class="ms-2">
+                                    <button type="submit" name="toggle_visibility" class="btn btn-sm icon-link d-flex align-items-center gap-1 <?php echo $room["votes_visible"] ? "btn-outline-primary" : "btn-outline-warning"; ?>">
+                                        <span class="material-symbols-rounded fs-6"><?php echo $room["votes_visible"] ? "visibility" : "visibility_off"; ?></span>
+                                        <?php echo $room["votes_visible"] ? gettext("Hide results") : gettext("Show results"); ?>
+                                    </button>
+                                </form>
+
                                 <form method="POST" onsubmit="return confirm('<?php echo gettext("Do you want to delete the room completely?"); ?>');" class=" ms-2">
                                     <button type="submit" name="delete_room" class="btn btn-outline-danger btn-sm"><?php echo gettext("Delete room"); ?></button>
                                 </form>
@@ -322,6 +345,11 @@ if ($room) {
                         <?php
                             $thumbUrl = "https://img.youtube.com/vi/" . $vid["youtube_id"] . "/maxresdefault.jpg";
                             $can_delete = ($is_room_owner || $vid["submitted_by_session_id"] === $user_id);
+
+                            $show_stats = $room["votes_visible"] || $is_room_owner;
+
+                            $total = $vid["likes"] + $vid["dislikes"];
+                            $percent = $total > 0 ? ($vid["likes"] / $total) * 100 : 50;
                         ?>
                         <div class="col">
                             <div class="card h-100 shadow-sm">
@@ -337,24 +365,37 @@ if ($room) {
                                 <?php endif; ?>
 
                                 <div class="card-body">
-                                    <div class="d-flex justify-content-between mb-2 fw-bold">
-                                        <span class="text-success">
-                                            <?php echo $vid["likes"]; ?>
-                                            <?php echo ngettext("Would click", "Would click", $vid["likes"]); ?>
-                                        </span>
-                                        <span class="text-danger">
-                                            <?php echo $vid["dislikes"]; ?>
-                                            <?php echo ngettext("Would skip", "Would skip", $vid["dislikes"]); ?>
-                                        </span>
-                                    </div>
-                                    <div class="progress mb-3" style="height: 6px;">
-                                        <?php
-                                            $total = $vid["likes"] + $vid["dislikes"];
-                                            $percent = $total > 0 ? ($vid["likes"] / $total) * 100 : 50;
-                                        ?>
-                                        <div class="progress-bar bg-success" role="progressbar" style="width: <?php echo $percent; ?>%"></div>
-                                        <div class="progress-bar bg-danger" role="progressbar" style="width: <?php echo (100-$percent); ?>%"></div>
-                                    </div>
+                                    <?php if ($show_stats): ?>
+                                        <div class="<?php echo (!$room["votes_visible"] && $is_room_owner) ? "opacity-50" : ""; ?>">
+                                            <div class="d-flex justify-content-between mb-2 fw-bold">
+                                                <span class="text-success">
+                                                    <?php echo $vid["likes"]; ?>
+                                                    <?php echo ngettext("Would click", "Would click", $vid["likes"]); ?>
+                                                </span>
+                                                <span class="text-danger">
+                                                    <?php echo $vid["dislikes"]; ?>
+                                                    <?php echo ngettext("Would skip", "Would skip", $vid["dislikes"]); ?>
+                                                </span>
+                                            </div>
+                                            <div class="progress mb-3" style="height: 6px;">
+                                                <div class="progress-bar bg-success" role="progressbar" style="width: <?php echo $percent; ?>%"></div>
+                                                <div class="progress-bar bg-danger" role="progressbar" style="width: <?php echo (100-$percent); ?>%"></div>
+                                            </div>
+
+                                            <?php if (!$room["votes_visible"] && $is_room_owner): ?>
+                                                <div class="text-center text-muted small mt-n2 mb-2 fst-italic">
+                                                    <span class="material-symbols-rounded align-middle fs-6">visibility_off</span>
+                                                    <?php echo gettext("Visible only to you"); ?>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+
+                                    <?php else: ?>
+                                        <div class="alert alert-light text-center py-2 mb-3 border">
+                                            <span class="material-symbols-rounded align-middle text-muted">visibility_off</span>
+                                            <small class="text-muted d-block"><?php echo gettext("Votes hidden"); ?></small>
+                                        </div>
+                                    <?php endif; ?>
 
                                     <form method="POST" class="d-flex justify-content-between">
                                         <input type="hidden" name="video_id" value="<?php echo $vid["id"]; ?>">

@@ -9,3 +9,7 @@ RewriteCond %{REQUEST_URI} !\.php$
 RewriteCond %{DOCUMENT_ROOT}/$1.php -f
 
 RewriteRule ^(.*)$ $1.php [L]
+
+<FilesMatch "\.(db|sqlite|sqlite3)$">
+    Require all denied
+</FilesMatch>

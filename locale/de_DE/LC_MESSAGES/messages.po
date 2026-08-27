@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2026-01-09 14:39+0100\n"
-"PO-Revision-Date: 2026-01-09 14:40+0100\n"
+"POT-Creation-Date: 2026-08-27 12:00+0200\n"
+"PO-Revision-Date: 2026-08-27 12:00+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: de_DE\n"
@@ -14,113 +14,165 @@ msgstr ""
 "X-Poedit-Basepath: ../../..\n"
 "X-Poedit-SearchPath-0: index.php\n"
 
-#: index.php:259
-msgid "Toggle navigation"
-msgstr "Navigation ausklappen"
+#: index.php:233
+msgid "Jump to content"
+msgstr "Zum Inhalt springen"
+
+#: index.php:238 index.php:239
+msgid "Open menu"
+msgstr "Menü öffnen"
+
+#: index.php:256 index.php:257
+msgid "Close menu"
+msgstr "Menü schließen"
+
+#: index.php:268
+msgid "No room open"
+msgstr "Kein Raum geöffnet"
 
 #: index.php:272
-msgid "German"
-msgstr "Deutsch"
+msgid "Main navigation"
+msgstr "Hauptnavigation"
 
-#: index.php:273
-msgid "English"
-msgstr "Englisch"
-
-#: index.php:279
+#: index.php:285 index.php:299
 msgid "Room"
 msgstr "Raum"
 
-#: index.php:280
-msgid "Leave room"
-msgstr "Raum verlassen"
+#: index.php:294
+msgid "Link copied"
+msgstr "Link kopiert"
 
-#: index.php:286
+#: index.php:295
+msgid "Copy room link"
+msgstr "Raumlink kopieren"
+
+#: index.php:310
 msgid "Hide results"
 msgstr "Ergebnisse ausblenden"
 
-#: index.php:286
+#: index.php:310
 msgid "Show results"
 msgstr "Ergebnisse einblenden"
 
-#: index.php:290
+#: index.php:315
 msgid "Do you want to delete the room completely?"
 msgstr "Willst du den Raum wirklich löschen?"
 
-#: index.php:291
+#: index.php:320
 msgid "Delete room"
 msgstr "Raum löschen"
 
-#: index.php:306
+#: index.php:331
+msgid "Leave room"
+msgstr "Raum verlassen"
+
+#: index.php:340 index.php:414
 msgid "Create new room"
 msgstr "Neuen Raum erstellen"
 
-#: index.php:307
+#: index.php:358
+msgid "Settings"
+msgstr "Einstellungen"
+
+#: index.php:372
+msgid "Language"
+msgstr "Sprache"
+
+#: index.php:375
+msgid "Choose language"
+msgstr "Sprache wählen"
+
+#: index.php:378
+msgid "German"
+msgstr "Deutsch"
+
+#: index.php:382
+msgid "English"
+msgstr "Englisch"
+
+#: index.php:396
+msgid "Made with"
+msgstr "Made with"
+
+#: index.php:398
+msgid "by"
+msgstr "by"
+
+#: index.php:415
 msgid "Start new session for your team."
 msgstr "Starte eine neue Sitzung für dein Team."
 
-#: index.php:311
+#: index.php:423
+msgid "Room name"
+msgstr "Raumname"
+
+#: index.php:425
 msgid "Room name (eg. vlog january)"
 msgstr "Raumname (z.B. Vlog Jänner)"
 
-#: index.php:314
+#: index.php:430
 msgid "Open room"
 msgstr "Raum öffnen"
 
-#: index.php:322
+#: index.php:443
+msgid "Paste a YouTube link to collect thumbnails and vote on them."
+msgstr "Füge YouTube-Links ein, um Thumbnails zu sammeln und darüber abzustimmen."
+
+#: index.php:449 index.php:453
 msgid "Add YouTube video"
 msgstr "YouTube Video hinzufügen"
 
-#: index.php:328
+#: index.php:458
 msgid "Add"
 msgstr "Hinzufügen"
 
-#: index.php:333
+#: index.php:466
 msgid "Rate thumbnails"
 msgstr "Thumbnails bewerten"
 
-#: index.php:338
+#: index.php:473
+msgid "No thumbnails yet"
+msgstr "Noch keine Thumbnails"
+
+#: index.php:474
 msgid "No videos in this room yet. Add the first link above!"
 msgstr "Noch keine Videos hinzugefügt. Füge den ersten Link oben ein!"
 
-#: index.php:359
+#: index.php:496
 msgid "Delete thumbnail?"
 msgstr "Thumbnail löschen?"
 
-#: index.php:361
+#: index.php:499 index.php:500
 msgid "Remove thumbnail"
 msgstr "Thumbnail löschen"
 
-#: index.php:373 index.php:406
+#: index.php:513 index.php:523 index.php:560
 msgid "Would click"
 msgid_plural "Would click"
 msgstr[0] "Würde anklicken"
 msgstr[1] "Würden anklicken"
 
-#: index.php:377
+#: index.php:516 index.php:529
 msgid "Would skip"
 msgid_plural "Would skip"
 msgstr[0] "Würde überspringen"
 msgstr[1] "Würden überspringen"
 
-#: index.php:388
+#: index.php:539
 msgid "Visible only to you"
 msgstr "Nur für dich sichtbar"
 
-#: index.php:396
+#: index.php:548
 msgid "Votes hidden"
 msgstr "Ergebnisse ausgeblendet"
 
-#: index.php:411
+#: index.php:566
 msgid "Rather not"
 msgstr "Eher nicht"
 
-#: index.php:425
-msgid "Made with"
-msgstr "Made with"
-
-#: index.php:427
-msgid "by"
-msgstr "by"
+#~ msgid "Toggle navigation"
+#~ msgstr "Navigation ausklappen"
 
 #~ msgid "Skip"
 #~ msgstr "Überspringen"
+

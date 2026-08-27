@@ -222,217 +222,359 @@ if ($room) {
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>ThumbRank <?php echo $room ? "- " . htmlspecialchars($room["name"]) : ""; ?></title>
 
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0&icon_names=close,favorite,globe,thumb_down,thumb_up,thumbs_up_down,visibility,visibility_off" />
-
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 -960 960 960%22 fill=%22%231f1f1f%22><path d=%22M80-400q-33 0-56.5-23.5T0-480v-240q0-12 5-23t13-19l126-126q9-9 20-13.5t22-4.5q26 0 45 20t14 51l-13 75h208q17 0 28.5 11.5T480-720v50q0 6-1 11.5t-3 10.5l-90 212q-7 17-22.5 26.5T330-400H80Zm440 200q-17 0-28.5-11.5T480-240v-50q0-6 1-11.5t3-10.5l90-212q8-17 23-26.5t33-9.5h250q33 0 56.5 23.5T960-480v240q0 12-4.5 22.5T942-198L816-72q-9 9-20 13.5T774-54q-26 0-45-20t-14-51l13-75H520Z%22/></svg>">
-
-        <style>
-            .card{
-                transition: transform 0.2s;
-            }
-            .card:hover{
-                transform: translateY(-2px);
-            }
-
-            .btn-delete-video {
-                position: absolute; top: 8px; right: 8px; z-index: 10;
-                width: 25px; height: 25px; display: flex;
-                align-items: center; justify-content: center; cursor: pointer;
-            }
-            .blurred-stats {
-                filter: blur(4px);
-                opacity: 0.5;
-                user-select: none;
-            }
-        </style>
-
+        <link href="css/material-symbols.css" rel="stylesheet">
+        <link href="css/dm-sans.css" rel="stylesheet">
+        <link href="css/bootstrap.min.css" rel="stylesheet">
+        <link rel="icon" href="img/app-logo.svg">
     </head>
-    <body class="bg-body-tertiary">
-        <nav class="navbar navbar-expand-lg">
-            <div class="container">
-                <a class="navbar-brand icon-link" href="#">
-                    <span class="material-symbols-rounded fs-2 pe-2 text-primary">thumbs_up_down</span>
-                    <span class=" fs-1 fw-bold text-dark">ThumbRank</span>
-                </a>
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="<?php echo gettext("Toggle navigation"); ?>">
-                      <span class="navbar-toggler-icon"></span>
-                </button>
+    <body>
 
-                <div class="collapse navbar-collapse" id="navbarContent">
-                    <div class="pt-3 pt-lg-0 ms-auto d-flex align-items-center">
-                        <ul class="navbar-nav">
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle icon-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <span class="material-symbols-rounded align-middle fs-5">globe</span>
-                                    <?php echo strtoupper($current_user_lang); ?>
-                                </a>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="?<?php echo http_build_query(array_merge($_GET, ["lang" => "de"])); ?>"><?php echo gettext("German"); ?></a></li>
-                                    <li><a class="dropdown-item" href="?<?php echo http_build_query(array_merge($_GET, ["lang" => "en"])); ?>"><?php echo gettext("English"); ?></a></li>
-                                </ul>
-                            </li>
-                        </ul>
+        <a id="skip-link" class="visually-hidden-focusable skip-link" href="#main-content"><?php echo gettext("Jump to content"); ?></a>
 
-                        <?php if ($room): ?>
-                            <span onclick="copy_room_link()" class="badge bg-secondary ms-2 cursor-pointer" style="cursor:pointer;"><?php echo gettext("Room"); ?>: <?php echo htmlspecialchars($room["room_code"]); ?></span>
-                            <a href="?" class="btn btn-outline-secondary btn-sm ms-2"><?php echo gettext("Leave room"); ?></a>
+        <button class="btn drawer-toggle drawer-toggle-open" id="drawer-open"
+                type="button" data-drawer-toggle
+                aria-controls="drawer-nav" aria-expanded="true"
+                aria-label="<?php echo htmlspecialchars(gettext("Open menu"), ENT_QUOTES); ?>"
+                title="<?php echo htmlspecialchars(gettext("Open menu"), ENT_QUOTES); ?>">
+            <span class="material-symbols-outlined" aria-hidden="true">menu</span>
+        </button>
 
-                            <?php if ($is_room_owner): ?>
-                                <form method="POST" class="ms-2">
-                                    <button type="submit" name="toggle_visibility" class="btn btn-sm icon-link d-flex align-items-center gap-1 <?php echo $room["votes_visible"] ? "btn-outline-primary" : "btn-outline-warning"; ?>">
-                                        <span class="material-symbols-rounded fs-6"><?php echo $room["votes_visible"] ? "visibility" : "visibility_off"; ?></span>
-                                        <?php echo $room["votes_visible"] ? gettext("Hide results") : gettext("Show results"); ?>
-                                    </button>
-                                </form>
+        <div class="drawer-backdrop" id="drawer-backdrop" aria-hidden="true" hidden></div>
 
-                                <form method="POST" onsubmit="return confirm('<?php echo gettext("Do you want to delete the room completely?"); ?>');" class=" ms-2">
-                                    <button type="submit" name="delete_room" class="btn btn-outline-danger btn-sm"><?php echo gettext("Delete room"); ?></button>
-                                </form>
-                            <?php endif; ?>
-                        <?php endif; ?>
-
-                    </div>
-
+        <!-- Drawer -->
+        <aside class="drawer drawer-left show" id="drawer-nav">
+            <header class="drawer-header py-1 px-2">
+                <div class="drawer-header-content">
+                    <img src="img/app-logo.svg" alt="" class="drawer-logo">
+                    <span class="drawer-brand">ThumbRank</span>
                 </div>
-            </div>
-        </nav>
 
-        <div class="container py-5">
+                <button id="drawer-close" class="btn drawer-toggle ms-auto" type="button"
+                        data-drawer-toggle data-drawer-dismiss
+                        aria-controls="drawer-nav" aria-expanded="true"
+                        aria-label="<?php echo htmlspecialchars(gettext("Close menu"), ENT_QUOTES); ?>"
+                        title="<?php echo htmlspecialchars(gettext("Close menu"), ENT_QUOTES); ?>">
+                    <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                </button>
+            </header>
+
+            <div class="drawer-content">
+                <p class="drawer-nav-item drawer-nav-item-static mb-0" role="status">
+                    <span class="drawer-nav-icon" aria-hidden="true">
+                        <span class="material-symbols-outlined">meeting_room</span>
+                    </span>
+                    <span class="drawer-nav-label text-truncate">
+                        <?php echo $room ? htmlspecialchars($room["name"]) : gettext("No room open"); ?>
+                    </span>
+                </p>
+
+                <nav class="drawer-nav" aria-label="<?php echo htmlspecialchars(gettext("Main navigation"), ENT_QUOTES); ?>">
+                    <ul class="list-unstyled mb-0">
+
+                        <!-- Room -->
+                        <li class="drawer-nav-group">
+                            <h2 class="drawer-nav-heading">
+                                <button class="drawer-nav-item drawer-nav-toggle" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#nav-room"
+                                        aria-expanded="true" aria-controls="nav-room">
+                                    <span class="drawer-nav-chevron" aria-hidden="true">
+                                        <span class="collapsed-icon material-symbols-outlined">chevron_right</span>
+                                        <span class="expanded-icon material-symbols-outlined">expand_more</span>
+                                    </span>
+                                    <span class="drawer-nav-label text-truncate"><?php echo gettext("Room"); ?></span>
+                                </button>
+                            </h2>
+
+                            <div class="collapse show" id="nav-room">
+                                <ul class="list-unstyled mb-0">
+                                    <?php if ($room): ?>
+                                        <li>
+                                            <button id="copy-room-link" class="drawer-nav-item drawer-nav-sub" type="button"
+                                                    data-copied-text="<?php echo htmlspecialchars(gettext("Link copied"), ENT_QUOTES); ?>"
+                                                    title="<?php echo htmlspecialchars(gettext("Copy room link"), ENT_QUOTES); ?>">
+                                                <span class="drawer-nav-icon" aria-hidden="true">
+                                                    <span class="material-symbols-outlined">content_copy</span>
+                                                </span>
+                                                <span class="drawer-nav-label text-truncate" data-copy-label><?php echo gettext("Room"); ?>: <?php echo htmlspecialchars($room["room_code"]); ?></span>
+                                            </button>
+                                        </li>
+
+                                        <?php if ($is_room_owner): ?>
+                                            <li>
+                                                <form method="POST" class="m-0">
+                                                    <button type="submit" name="toggle_visibility" class="drawer-nav-item drawer-nav-sub">
+                                                        <span class="drawer-nav-icon" aria-hidden="true">
+                                                            <span class="material-symbols-outlined"><?php echo $room["votes_visible"] ? "visibility_off" : "visibility"; ?></span>
+                                                        </span>
+                                                        <span class="drawer-nav-label text-truncate"><?php echo $room["votes_visible"] ? gettext("Hide results") : gettext("Show results"); ?></span>
+                                                    </button>
+                                                </form>
+                                            </li>
+                                            <li>
+                                                <form method="POST" class="m-0" onsubmit="return confirm(<?php echo htmlspecialchars(json_encode(gettext("Do you want to delete the room completely?")), ENT_QUOTES); ?>);">
+                                                    <button type="submit" name="delete_room" class="drawer-nav-item drawer-nav-sub text-danger">
+                                                        <span class="drawer-nav-icon text-danger" aria-hidden="true">
+                                                            <span class="material-symbols-outlined">delete</span>
+                                                        </span>
+                                                        <span class="drawer-nav-label text-truncate"><?php echo gettext("Delete room"); ?></span>
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        <?php endif; ?>
+
+                                        <li>
+                                            <a class="drawer-nav-item drawer-nav-sub" href="?">
+                                                <span class="drawer-nav-icon" aria-hidden="true">
+                                                    <span class="material-symbols-outlined">logout</span>
+                                                </span>
+                                                <span class="drawer-nav-label text-truncate"><?php echo gettext("Leave room"); ?></span>
+                                            </a>
+                                        </li>
+                                    <?php else: ?>
+                                        <li>
+                                            <a class="drawer-nav-item drawer-nav-sub" href="?" aria-current="page">
+                                                <span class="drawer-nav-icon" aria-hidden="true">
+                                                    <span class="material-symbols-outlined">add</span>
+                                                </span>
+                                                <span class="drawer-nav-label text-truncate"><?php echo gettext("Create new room"); ?></span>
+                                            </a>
+                                        </li>
+                                    <?php endif; ?>
+                                </ul>
+                            </div>
+                        </li>
+
+                        <!-- Settings -->
+                        <li class="drawer-nav-group">
+                            <h2 class="drawer-nav-heading">
+                                <button class="drawer-nav-item drawer-nav-toggle" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#nav-settings"
+                                        aria-expanded="true" aria-controls="nav-settings">
+                                    <span class="drawer-nav-chevron" aria-hidden="true">
+                                        <span class="collapsed-icon material-symbols-outlined">chevron_right</span>
+                                        <span class="expanded-icon material-symbols-outlined">expand_more</span>
+                                    </span>
+                                    <span class="drawer-nav-label text-truncate"><?php echo gettext("Settings"); ?></span>
+                                </button>
+                            </h2>
+
+                            <div class="collapse show" id="nav-settings">
+                                <ul class="list-unstyled mb-0">
+                                    <li class="dropdown">
+                                        <button class="drawer-nav-item drawer-nav-sub dropdown-toggle" type="button"
+                                                data-bs-toggle="dropdown" data-bs-display="static"
+                                                aria-expanded="false">
+                                            <span class="drawer-nav-icon" aria-hidden="true">
+                                                <span class="material-symbols-outlined">language</span>
+                                            </span>
+                                            <span class="drawer-nav-label text-truncate">
+                                                <?php echo gettext("Language"); ?>: <?php echo strtoupper($current_user_lang); ?>
+                                            </span>
+                                        </button>
+                                        <ul class="dropdown-menu" aria-label="<?php echo htmlspecialchars(gettext("Choose language"), ENT_QUOTES); ?>">
+                                            <li>
+                                                <a class="dropdown-item" href="?<?php echo htmlspecialchars(http_build_query(array_merge($_GET, ["lang" => "de"])), ENT_QUOTES); ?>"
+                                                   <?php echo $current_user_lang === "de" ? 'aria-current="true"' : ""; ?>><?php echo gettext("German"); ?></a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="?<?php echo htmlspecialchars(http_build_query(array_merge($_GET, ["lang" => "en"])), ENT_QUOTES); ?>"
+                                                   <?php echo $current_user_lang === "en" ? 'aria-current="true"' : ""; ?>><?php echo gettext("English"); ?></a>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+
+                    </ul>
+                </nav>
+            </div>
+
+            <div class="drawer-footer text-center">
+                <a href="https://simon-eller.at" target="_blank" rel="noopener noreferrer">
+                    <img src="img/simon-eller-logo.svg" alt="Simon Eller" style="height: 2rem;">
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <main id="main-content" tabindex="-1" class="min-vh-100 d-flex flex-column p-4 pt-5">
 
             <?php if (!$room): ?>
-                <div class="card p-5 text-center shadow mx-auto" style="max-width: 500px;">
-                    <h3><?php echo gettext("Create new room"); ?></h3>
-                    <p class="text-muted"><?php echo gettext("Start new session for your team."); ?></p>
 
-                    <form method="POST">
-                        <div class="mb-4">
-                            <input type="text" name="room_name" class="form-control" placeholder="<?php echo gettext("Room name (eg. vlog january)"); ?>" required>
-                        </div>
+                <!-- Create room -->
+                <div class="flex-grow-1 d-flex flex-column align-items-center justify-content-center text-center">
+                    <span class="material-symbols-outlined display-1 fw-normal text-primary opacity-50" aria-hidden="true">meeting_room</span>
+                    <h1 class="fw-bold fs-2 mb-1"><?php echo gettext("Create new room"); ?></h1>
+                    <p class="text-body-secondary mb-4"><?php echo gettext("Start new session for your team."); ?></p>
 
-                        <button type="submit" name="create_room" class="btn btn-primary w-100 btn-lg"><?php echo gettext("Open room"); ?></button>
-                    </form>
-                </div>
-            <?php endif; ?>
-
-            <?php if ($room): ?>
-
-                <div class="card p-4 mb-5 shadow-sm">
-                    <h5 class="card-title pb-2"><?php echo gettext("Add YouTube video"); ?></h5>
-                    <form method="POST" class="row g-2">
-                        <div class="col-md-10">
-                            <input type="text" name="yt_video_url" class="form-control" placeholder="https://www.youtube.com/watch?v=..." required>
-                        </div>
-                        <div class="col-md-2">
-                            <button type="submit" name="add_video" class="btn btn-primary w-100"><?php echo gettext("Add"); ?></button>
-                        </div>
-                    </form>
-                </div>
-
-                <h4 class="mb-3"><?php echo gettext("Rate thumbnails"); ?> (<?php echo count($videos); ?>)</h4>
-
-                <?php if (empty($videos)): ?>
-                    <div class="col-12 py-3">
-                        <p class="text-muted">
-                            <?php echo gettext("No videos in this room yet. Add the first link above!"); ?>
-                        </p>
-                    </div>
-                <?php endif; ?>
-
-                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                    <?php foreach ($videos as $vid): ?>
-                        <?php
-                            $thumbUrl = "https://img.youtube.com/vi/" . $vid["youtube_id"] . "/maxresdefault.jpg";
-                            $can_delete = ($is_room_owner || $vid["submitted_by_session_id"] === $user_id);
-
-                            $show_stats = $room["votes_visible"] || $is_room_owner;
-
-                            $total = $vid["likes"] + $vid["dislikes"];
-                            $percent = $total > 0 ? ($vid["likes"] / $total) * 100 : 50;
-                        ?>
-                        <div class="col">
-                            <div class="card h-100 shadow-sm">
-                                <img class="card-img-top w-100" src="<?php echo $thumbUrl; ?>" alt="Thumbnail" loading="lazy">
-
-                                <?php if ($can_delete): ?>
-                                    <form method="POST" onsubmit="return confirm('<?php echo gettext("Delete thumbnail?"); ?>');">
-                                        <input type="hidden" name="video_id" value="<?php echo $vid["id"]; ?>">
-                                        <button type="submit" name="delete_video" class="btn btn-danger btn-delete-video" title="<?php echo gettext("Remove thumbnail"); ?>">
-                                            <span class="material-symbols-rounded fs-6">close</span>
-                                        </button>
-                                    </form>
-                                <?php endif; ?>
-
+                    <div class="row justify-content-center w-100">
+                        <div class="col-12 col-md-8 col-lg-6 col-xl-4">
+                            <div class="card border rounded-4">
                                 <div class="card-body">
-                                    <?php if ($show_stats): ?>
-                                        <div class="<?php echo (!$room["votes_visible"] && $is_room_owner) ? "opacity-50" : ""; ?>">
-                                            <div class="d-flex justify-content-between mb-2 fw-bold">
-                                                <span class="text-success">
-                                                    <?php echo $vid["likes"]; ?>
-                                                    <?php echo ngettext("Would click", "Would click", $vid["likes"]); ?>
-                                                </span>
-                                                <span class="text-danger">
-                                                    <?php echo $vid["dislikes"]; ?>
-                                                    <?php echo ngettext("Would skip", "Would skip", $vid["dislikes"]); ?>
-                                                </span>
-                                            </div>
-                                            <div class="progress mb-3" style="height: 6px;">
-                                                <div class="progress-bar bg-success" role="progressbar" style="width: <?php echo $percent; ?>%"></div>
-                                                <div class="progress-bar bg-danger" role="progressbar" style="width: <?php echo (100-$percent); ?>%"></div>
-                                            </div>
-
-                                            <?php if (!$room["votes_visible"] && $is_room_owner): ?>
-                                                <div class="text-center text-muted small mt-n2 mb-2 fst-italic">
-                                                    <span class="material-symbols-rounded align-middle fs-6">visibility_off</span>
-                                                    <?php echo gettext("Visible only to you"); ?>
-                                                </div>
-                                            <?php endif; ?>
+                                    <form method="POST">
+                                        <div class="mb-3 text-start">
+                                            <label for="room-name" class="form-label"><?php echo gettext("Room name"); ?></label>
+                                            <input type="text" id="room-name" name="room_name" class="form-control"
+                                                   placeholder="<?php echo htmlspecialchars(gettext("Room name (eg. vlog january)"), ENT_QUOTES); ?>" required>
                                         </div>
 
-                                    <?php else: ?>
-                                        <div class="alert alert-light text-center py-2 mb-3 border">
-                                            <span class="material-symbols-rounded align-middle text-muted">visibility_off</span>
-                                            <small class="text-muted d-block"><?php echo gettext("Votes hidden"); ?></small>
-                                        </div>
-                                    <?php endif; ?>
-
-                                    <form method="POST" class="d-flex justify-content-between">
-                                        <input type="hidden" name="video_id" value="<?php echo $vid["id"]; ?>">
-                                        <input type="hidden" name="vote" value="1">
-
-                                        <button type="submit" name="vote_value" value="1" style="width:48%;" class="btn icon-link <?php echo ($vid["current_user_vote"] === 1) ? "btn-success text-white" : "btn-outline-success"; ?>">
-                                            <span class="material-symbols-rounded">thumb_up</span>
-                                            <?php echo gettext("Would click"); ?>
-                                        </button>
-
-                                        <button type="submit" name="vote_value" value="0" style="width:48%;" class="btn icon-link <?php echo ($vid["current_user_vote"] === 0) ? "btn-danger text-white" : "btn-outline-danger"; ?>">
-                                            <span class="material-symbols-rounded">thumb_down</span>
-                                            <?php echo gettext("Rather not"); ?>
+                                        <button type="submit" name="create_room" class="btn btn-primary btn-lg fw-semibold icon-link justify-content-center w-100">
+                                            <span class="material-symbols-outlined" aria-hidden="true">add</span>
+                                            <span><?php echo gettext("Open room"); ?></span>
                                         </button>
                                     </form>
                                 </div>
                             </div>
                         </div>
-                    <?php endforeach; ?>
-
+                    </div>
                 </div>
+
+            <?php else: ?>
+
+                <!-- Room -->
+                <h1 class="fw-bold fs-2 mb-1"><?php echo htmlspecialchars($room["name"]); ?></h1>
+                <p class="text-body-secondary"><?php echo gettext("Paste a YouTube link to collect thumbnails and vote on them."); ?></p>
+
+                <div class="card border rounded-4 mb-4">
+                    <div class="card-body">
+                        <h2 class="fw-semibold fs-6 mb-3 icon-link">
+                            <span class="material-symbols-outlined text-primary" aria-hidden="true">add_link</span>
+                            <span><?php echo gettext("Add YouTube video"); ?></span>
+                        </h2>
+
+                        <form method="POST" class="d-flex gap-2 flex-wrap">
+                            <label for="yt-video-url" class="visually-hidden"><?php echo gettext("Add YouTube video"); ?></label>
+                            <input type="url" id="yt-video-url" name="yt_video_url" class="form-control flex-grow-1 w-auto"
+                                   placeholder="https://www.youtube.com/watch?v=..." required>
+                            <button type="submit" name="add_video" class="btn btn-primary fw-semibold icon-link flex-shrink-0">
+                                <span class="material-symbols-outlined" aria-hidden="true">add</span>
+                                <span><?php echo gettext("Add"); ?></span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <h2 class="fw-semibold fs-6 mb-3 icon-link">
+                    <span class="material-symbols-outlined text-primary" aria-hidden="true">leaderboard</span>
+                    <span><?php echo gettext("Rate thumbnails"); ?> (<?php echo count($videos); ?>)</span>
+                </h2>
+
+                <?php if (empty($videos)): ?>
+
+                    <div class="flex-grow-1 d-flex flex-column align-items-center justify-content-center text-center py-5">
+                        <span class="material-symbols-outlined display-1 fw-normal text-primary opacity-50" aria-hidden="true">add_photo_alternate</span>
+                        <h3 class="fw-bold fs-4 mb-1"><?php echo gettext("No thumbnails yet"); ?></h3>
+                        <p class="text-body-secondary mb-0"><?php echo gettext("No videos in this room yet. Add the first link above!"); ?></p>
+                    </div>
+
+                <?php else: ?>
+
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+                        <?php foreach ($videos as $vid): ?>
+                            <?php
+                                $thumbUrl = "https://img.youtube.com/vi/" . $vid["youtube_id"] . "/maxresdefault.jpg";
+                                $can_delete = ($is_room_owner || $vid["submitted_by_session_id"] === $user_id);
+
+                                $show_stats = $room["votes_visible"] || $is_room_owner;
+
+                                $total = $vid["likes"] + $vid["dislikes"];
+                                $percent = $total > 0 ? ($vid["likes"] / $total) * 100 : 50;
+                            ?>
+                            <div class="col">
+                                <div class="card border rounded-4 h-100 position-relative overflow-hidden">
+                                    <img class="card-img-top w-100" src="<?php echo $thumbUrl; ?>" alt="" loading="lazy">
+
+                                    <?php if ($can_delete): ?>
+                                        <form method="POST" class="position-absolute top-0 end-0 m-2"
+                                              onsubmit="return confirm(<?php echo htmlspecialchars(json_encode(gettext("Delete thumbnail?")), ENT_QUOTES); ?>);">
+                                            <input type="hidden" name="video_id" value="<?php echo $vid["id"]; ?>">
+                                            <button type="submit" name="delete_video" class="btn btn-danger btn-sm rounded-circle lh-1 p-1 d-flex"
+                                                    aria-label="<?php echo htmlspecialchars(gettext("Remove thumbnail"), ENT_QUOTES); ?>"
+                                                    title="<?php echo htmlspecialchars(gettext("Remove thumbnail"), ENT_QUOTES); ?>">
+                                                <span class="material-symbols-outlined fs-6" aria-hidden="true">close</span>
+                                            </button>
+                                        </form>
+                                    <?php endif; ?>
+
+                                    <div class="card-body d-flex flex-column">
+                                        <?php if ($show_stats): ?>
+
+                                            <div class="<?php echo (!$room["votes_visible"] && $is_room_owner) ? "opacity-50" : ""; ?>">
+                                                <div class="d-flex justify-content-between align-items-center gap-2 mb-2 small fw-semibold">
+                                                    <span class="text-success icon-link">
+                                                        <span class="material-symbols-outlined fs-6" aria-hidden="true">thumb_up</span>
+                                                        <span><?php echo $vid["likes"]; ?> <?php echo ngettext("Would click", "Would click", $vid["likes"]); ?></span>
+                                                    </span>
+                                                    <span class="text-danger icon-link text-end">
+                                                        <span><?php echo $vid["dislikes"]; ?> <?php echo ngettext("Would skip", "Would skip", $vid["dislikes"]); ?></span>
+                                                        <span class="material-symbols-outlined fs-6" aria-hidden="true">thumb_down</span>
+                                                    </span>
+                                                </div>
+
+                                                <div class="progress-stacked mb-3">
+                                                    <div class="progress" role="progressbar"
+                                                         aria-label="<?php echo htmlspecialchars(gettext("Would click"), ENT_QUOTES); ?>"
+                                                         aria-valuenow="<?php echo round($percent); ?>" aria-valuemin="0" aria-valuemax="100"
+                                                         style="width: <?php echo $percent; ?>%">
+                                                        <div class="progress-bar bg-success"></div>
+                                                    </div>
+                                                    <div class="progress" role="progressbar"
+                                                         aria-label="<?php echo htmlspecialchars(gettext("Would skip"), ENT_QUOTES); ?>"
+                                                         aria-valuenow="<?php echo round(100 - $percent); ?>" aria-valuemin="0" aria-valuemax="100"
+                                                         style="width: <?php echo (100 - $percent); ?>%">
+                                                        <div class="progress-bar bg-danger"></div>
+                                                    </div>
+                                                </div>
+
+                                                <?php if (!$room["votes_visible"] && $is_room_owner): ?>
+                                                    <p class="d-flex justify-content-center align-items-center gap-1 small fst-italic text-body-secondary mb-3">
+                                                        <span class="material-symbols-outlined fs-6" aria-hidden="true">visibility_off</span>
+                                                        <span><?php echo gettext("Visible only to you"); ?></span>
+                                                    </p>
+                                                <?php endif; ?>
+                                            </div>
+
+                                        <?php else: ?>
+
+                                            <p class="d-flex flex-column align-items-center gap-1 border rounded-3 text-body-secondary small text-center py-2 mb-3">
+                                                <span class="material-symbols-outlined" aria-hidden="true">visibility_off</span>
+                                                <span><?php echo gettext("Votes hidden"); ?></span>
+                                            </p>
+
+                                        <?php endif; ?>
+
+                                        <form method="POST" class="d-flex gap-2 mt-auto">
+                                            <input type="hidden" name="video_id" value="<?php echo $vid["id"]; ?>">
+                                            <input type="hidden" name="vote" value="1">
+
+                                            <button type="submit" name="vote_value" value="1"
+                                                    class="btn btn-sm px-2 flex-fill icon-link justify-content-center <?php echo ($vid["current_user_vote"] === 1) ? "btn-success" : "btn-outline-success"; ?>">
+                                                <span class="material-symbols-outlined fs-6" aria-hidden="true">thumb_up</span>
+                                                <span><?php echo gettext("Would click"); ?></span>
+                                            </button>
+
+                                            <button type="submit" name="vote_value" value="0"
+                                                    class="btn btn-sm px-2 flex-fill icon-link justify-content-center <?php echo ($vid["current_user_vote"] === 0) ? "btn-danger" : "btn-outline-danger"; ?>">
+                                                <span class="material-symbols-outlined fs-6" aria-hidden="true">thumb_down</span>
+                                                <span><?php echo gettext("Rather not"); ?></span>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+
+                <?php endif; ?>
+
             <?php endif; ?>
 
-        </div>
+        </main>
 
-        <div class="pt-2 pt-md-0 text-center pb-5">
-            <?php echo gettext("Made with"); ?>
-            <span class="material-symbols-rounded fs-6">favorite</span>
-            <?php echo gettext("by"); ?>
-           <a class="text-dark" href="https://simon-eller.at">Simon Eller</a>
-        </div>
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-        <script>
-          function copy_room_link() {
-            navigator.clipboard.writeText(window.location.href);
-          }
-        </script>
+        <script src="js/bootstrap.bundle.min.js"></script>
+        <script src="js/drawer.js"></script>
+        <script src="js/app.js"></script>
     </body>
 </html>

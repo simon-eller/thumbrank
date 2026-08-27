@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2026-01-09 14:39+0100\n"
-"PO-Revision-Date: 2026-01-09 14:39+0100\n"
+"POT-Creation-Date: 2026-08-27 12:00+0200\n"
+"PO-Revision-Date: 2026-08-27 12:00+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: en_US\n"
@@ -14,113 +14,165 @@ msgstr ""
 "X-Poedit-Basepath: ../../..\n"
 "X-Poedit-SearchPath-0: index.php\n"
 
-#: index.php:259
-msgid "Toggle navigation"
-msgstr "Toggle navigation"
+#: index.php:233
+msgid "Jump to content"
+msgstr "Jump to content"
+
+#: index.php:238 index.php:239
+msgid "Open menu"
+msgstr "Open menu"
+
+#: index.php:256 index.php:257
+msgid "Close menu"
+msgstr "Close menu"
+
+#: index.php:268
+msgid "No room open"
+msgstr "No room open"
 
 #: index.php:272
-msgid "German"
-msgstr "German"
+msgid "Main navigation"
+msgstr "Main navigation"
 
-#: index.php:273
-msgid "English"
-msgstr "English"
-
-#: index.php:279
+#: index.php:285 index.php:299
 msgid "Room"
 msgstr "Room"
 
-#: index.php:280
-msgid "Leave room"
-msgstr "Leave room"
+#: index.php:294
+msgid "Link copied"
+msgstr "Link copied"
 
-#: index.php:286
+#: index.php:295
+msgid "Copy room link"
+msgstr "Copy room link"
+
+#: index.php:310
 msgid "Hide results"
 msgstr "Hide results"
 
-#: index.php:286
+#: index.php:310
 msgid "Show results"
 msgstr "Show results"
 
-#: index.php:290
+#: index.php:315
 msgid "Do you want to delete the room completely?"
 msgstr "Do you want to delete the room completely?"
 
-#: index.php:291
+#: index.php:320
 msgid "Delete room"
 msgstr "Delete room"
 
-#: index.php:306
+#: index.php:331
+msgid "Leave room"
+msgstr "Leave room"
+
+#: index.php:340 index.php:414
 msgid "Create new room"
 msgstr "Create new room"
 
-#: index.php:307
+#: index.php:358
+msgid "Settings"
+msgstr "Settings"
+
+#: index.php:372
+msgid "Language"
+msgstr "Language"
+
+#: index.php:375
+msgid "Choose language"
+msgstr "Choose language"
+
+#: index.php:378
+msgid "German"
+msgstr "German"
+
+#: index.php:382
+msgid "English"
+msgstr "English"
+
+#: index.php:396
+msgid "Made with"
+msgstr "Made with"
+
+#: index.php:398
+msgid "by"
+msgstr "by"
+
+#: index.php:415
 msgid "Start new session for your team."
 msgstr "Start new session for your team."
 
-#: index.php:311
+#: index.php:423
+msgid "Room name"
+msgstr "Room name"
+
+#: index.php:425
 msgid "Room name (eg. vlog january)"
 msgstr "Room name (eg. vlog january)"
 
-#: index.php:314
+#: index.php:430
 msgid "Open room"
 msgstr "Open room"
 
-#: index.php:322
+#: index.php:443
+msgid "Paste a YouTube link to collect thumbnails and vote on them."
+msgstr "Paste a YouTube link to collect thumbnails and vote on them."
+
+#: index.php:449 index.php:453
 msgid "Add YouTube video"
 msgstr "Add YouTube video"
 
-#: index.php:328
+#: index.php:458
 msgid "Add"
 msgstr "Add"
 
-#: index.php:333
+#: index.php:466
 msgid "Rate thumbnails"
 msgstr "Rate thumbnails"
 
-#: index.php:338
+#: index.php:473
+msgid "No thumbnails yet"
+msgstr "No thumbnails yet"
+
+#: index.php:474
 msgid "No videos in this room yet. Add the first link above!"
 msgstr "No videos in this room yet. Add the first link above!"
 
-#: index.php:359
+#: index.php:496
 msgid "Delete thumbnail?"
 msgstr "Delete thumbnail?"
 
-#: index.php:361
+#: index.php:499 index.php:500
 msgid "Remove thumbnail"
 msgstr "Remove thumbnail"
 
-#: index.php:373 index.php:406
+#: index.php:513 index.php:523 index.php:560
 msgid "Would click"
 msgid_plural "Would click"
 msgstr[0] "Would click"
 msgstr[1] "Would click"
 
-#: index.php:377
+#: index.php:516 index.php:529
 msgid "Would skip"
 msgid_plural "Would skip"
 msgstr[0] "Would skip"
 msgstr[1] "Would skip"
 
-#: index.php:388
+#: index.php:539
 msgid "Visible only to you"
 msgstr "Visible only to you"
 
-#: index.php:396
+#: index.php:548
 msgid "Votes hidden"
 msgstr "Votes hidden"
 
-#: index.php:411
+#: index.php:566
 msgid "Rather not"
 msgstr "Rather not"
 
-#: index.php:425
-msgid "Made with"
-msgstr "Made with"
-
-#: index.php:427
-msgid "by"
-msgstr "by"
+#~ msgid "Toggle navigation"
+#~ msgstr "Toggle navigation"
 
 #~ msgid "Skip"
 #~ msgstr "Skip"
+
